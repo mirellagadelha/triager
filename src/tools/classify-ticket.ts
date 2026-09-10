@@ -6,8 +6,11 @@ export const classifyTicket = defineTool({
   name: "classify_ticket",
 
   description:
-    "Classifies a ticket based solely on its content. " +
-    "Use this tool exactly once as the first step, before any other action.",
+    "Records a triage classification that you have already determined from the ticket text. " +
+    "This tool does not analyse the ticket: decide the category, urgency and summary yourself " +
+    "and pass them in. Use it exactly once as the first step, before any other action.",
+
+  semantics: { readOnly: true, openWorld: false },
 
   schema: z.object({
     category: z

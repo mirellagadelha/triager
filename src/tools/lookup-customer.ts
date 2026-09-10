@@ -2,7 +2,7 @@ import * as z from "zod";
 
 import { defineTool } from "./types.js";
 
-const CUSTOMERS: Record<string, { name: string; plan: string; since: string }> = {
+export const CUSTOMERS: Record<string, { name: string; plan: string; since: string }> = {
   "CUST-1001": { name: "Acme Ltda", plan: "enterprise", since: "2021-03-14" },
   "CUST-1002": { name: "Bruno Vieira", plan: "free", since: "2025-11-02" },
 };
@@ -14,6 +14,8 @@ export const lookupCustomer = defineTool({
     "Looks up a customer record by the identifier mentioned in the ticket. " +
     "Use after classification. If the ticket does not provide an identifier, " +
     "do not make one up; proceed without enriching the ticket.",
+
+  semantics: { readOnly: true, openWorld: false },
 
   schema: z.object({
     customer_id: z

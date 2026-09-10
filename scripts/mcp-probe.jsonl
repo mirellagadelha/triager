@@ -1,0 +1,16 @@
+{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"shell-probe","version":"0"}}}
+{"jsonrpc":"2.0","method":"notifications/initialized"}
+{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}
+{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"lookup_customer","arguments":{"customer_id":"CUST-1001"}}}
+{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"lookup_customer","arguments":{"customer_id":"CUST-9999"}}}
+{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"lookup_customer","arguments":{"customer_id":"nope"}}}
+{"jsonrpc":"2.0","id":6,"method":"resources/list","params":{}}
+{"jsonrpc":"2.0","id":7,"method":"prompts/list","params":{}}
+{"jsonrpc":"2.0","id":8,"method":"tools/call","params":{"name":"classify_ticket","arguments":{"category":"technical","urgency":"high","summary":"Dashboard has been down since 9 AM."}}}
+{"jsonrpc":"2.0","id":9,"method":"tools/call","params":{"name":"route_ticket","arguments":{"queue":"tier2","priority":"P1","reason":"High-urgency technical outage for an enterprise customer."}}}
+{"jsonrpc":"2.0","id":10,"method":"tools/call","params":{"name":"escalate_ticket","arguments":{}}}
+{"jsonrpc":"2.0","id":11,"method":"resources/read","params":{"uri":"triager://customers"}}
+{"jsonrpc":"2.0","id":12,"method":"resources/read","params":{"uri":"triager://nope"}}
+{"jsonrpc":"2.0","id":13,"method":"prompts/get","params":{"name":"triage_ticket","arguments":{"ticket":"Charged twice since March. Customer CUST-1001."}}}
+{"jsonrpc":"2.0","id":14,"method":"prompts/get","params":{"name":"triage_ticket","arguments":{}}}
+{"jsonrpc":"2.0","id":15,"method":"resources/subscribe","params":{"uri":"triager://customers"}}

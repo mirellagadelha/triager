@@ -35,15 +35,9 @@ function envelope(content: Anthropic.ContentBlock[], stop: Anthropic.Message["st
 }
 
 export function fakeToolUse(name: string, input: unknown, id = "toolu_fake") {
-  return envelope(
-    [{ type: "tool_use", id, name, input } as Anthropic.ContentBlock],
-    "tool_use"
-  );
+  return envelope([{ type: "tool_use", id, name, input } as Anthropic.ContentBlock], "tool_use");
 }
 
 export function fakeText(text: string) {
-  return envelope(
-    [{ type: "text", text, citations: null } as Anthropic.ContentBlock],
-    "end_turn"
-  );
+  return envelope([{ type: "text", text, citations: null } as Anthropic.ContentBlock], "end_turn");
 }

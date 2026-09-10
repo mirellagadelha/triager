@@ -10,6 +10,9 @@ export const routeTicket = defineTool({
     "Use after classification and customer lookup. If the ticket does not provide enough information, " +
     "do not make assumptions; proceed without routing the ticket.",
 
+  // This tool adds a ticket to a queue. It is not destructive or idempotent.
+  semantics: { readOnly: false, destructive: false, idempotent: false, openWorld: false },
+
   schema: z.object({
     queue: z
       .enum(["billing", "tier1", "tier2", "success"])

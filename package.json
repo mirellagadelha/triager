@@ -7,11 +7,15 @@
     "dev": "tsx watch src/main.ts",
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/main.js",
+    "mcp": "tsx src/mcp/stdio.ts",
+    "mcp:inspect": "npx @modelcontextprotocol/inspector npx tsx src/mcp/stdio.ts",
+    "mcp:probe": "tsx src/mcp/stdio.ts < scripts/mcp-probe.jsonl | jq",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.122.0",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "fastify": "^5.12.1",
     "zod": "^4.5.4"
   },

@@ -6,9 +6,13 @@ import { routeTicket } from "./route-ticket.js";
 
 import type { ToolDefinition } from "./types.js";
 
-const ALL: ToolDefinition[] = [classifyTicket, lookupCustomer, routeTicket];
+/**
+ * Single source of truth for all tools.
+ * Each tool must be defined here to be included in the system.
+ */
+export const toolDefinitions: ToolDefinition[] = [classifyTicket, lookupCustomer, routeTicket];
 
-const registry = new Map(ALL.map((tool) => [tool.name, tool]));
+const registry = new Map(toolDefinitions.map((tool) => [tool.name, tool]));
 
 import type Anthropic from "@anthropic-ai/sdk";
 
@@ -17,7 +21,7 @@ function toInputSchema(schema: ToolDefinition["schema"]): Anthropic.Tool.InputSc
   return { ...rest, type: "object" } as Anthropic.Tool.InputSchema;
 }
 
-export const toolSpecs: Anthropic.Tool[] = ALL.map((tool) => ({
+export const toolSpecs: Anthropic.Tool[] = toolDefinitions.map((tool) => ({
   name: tool.name,
   description: tool.description,
   input_schema: toInputSchema(tool.schema),
