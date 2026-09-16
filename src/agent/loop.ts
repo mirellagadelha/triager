@@ -4,18 +4,42 @@ import type { LlmClient } from "../llm/client.js";
 import { executeTool, toolSpecs } from "../tools/registry.js";
 import { SYSTEM_PROMPT, buildUserMessage } from "./prompts.js";
 
+export interface TriageUsage {
+  input: number;
+  output: number;
+  cacheRead: number;
+  cacheWrite: number;
+}
+
+export interface CallMetrics {
+  latencyMs: number;
+  input: number;
+  output: number;
+  cacheRead: number;
+  cacheWrite: number;
+}
+
 export interface TriageResult {
   text: string;
   iterations: number;
   toolCalls: { name: string; isError: boolean }[];
-  usage: { input: number; output: number };
+  usage: TriageUsage;
+  calls: CallMetrics[];
   stoppedAtLimit: boolean;
 }
 
 export interface RunOptions {
   model: string;
   maxIterations: number;
+
+  /** Defaults to the historical value, so existing callers are unaffected. */
+  maxTokens?: number;
+
+  /** Omitted means each model's own default. */
+  thinking?: Anthropic.MessageCreateParamsNonStreaming["thinking"];
 }
+
+const DEFAULT_MAX_TOKENS = 1024;
 
 export async function runTriage(
   client: LlmClient,
@@ -25,22 +49,31 @@ export async function runTriage(
   const messages: Anthropic.MessageParam[] = [{ role: "user", content: buildUserMessage(ticket) }];
 
   const toolCalls: TriageResult["toolCalls"] = [];
-  const usage = { input: 0, output: 0 };
+  const usage: TriageUsage = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 };
+  const calls: CallMetrics[] = [];
   let iterations = 0;
 
   while (iterations < options.maxIterations) {
     iterations++;
 
+    const startedAt = Date.now();
+
     const response = await client.createMessage({
       model: options.model,
-      max_tokens: 1024,
+      max_tokens: options.maxTokens ?? DEFAULT_MAX_TOKENS,
       system: SYSTEM_PROMPT,
       tools: toolSpecs,
       messages,
+      ...(options.thinking ? { thinking: options.thinking } : {}),
     });
 
-    usage.input += response.usage.input_tokens;
-    usage.output += response.usage.output_tokens;
+    const call = measure(response, Date.now() - startedAt);
+
+    calls.push(call);
+    usage.input += call.input;
+    usage.output += call.output;
+    usage.cacheRead += call.cacheRead;
+    usage.cacheWrite += call.cacheWrite;
 
     messages.push({ role: "assistant", content: response.content });
 
@@ -50,6 +83,7 @@ export async function runTriage(
         iterations,
         toolCalls,
         usage,
+        calls,
         stoppedAtLimit: false,
       };
     }
@@ -79,7 +113,18 @@ export async function runTriage(
     iterations,
     toolCalls,
     usage,
+    calls,
     stoppedAtLimit: true,
+  };
+}
+
+function measure(response: Anthropic.Message, latencyMs: number): CallMetrics {
+  return {
+    latencyMs,
+    input: response.usage.input_tokens,
+    output: response.usage.output_tokens,
+    cacheRead: response.usage.cache_read_input_tokens ?? 0,
+    cacheWrite: response.usage.cache_creation_input_tokens ?? 0,
   };
 }
 

@@ -10,6 +10,9 @@
     "mcp": "tsx src/mcp/stdio.ts",
     "mcp:inspect": "npx @modelcontextprotocol/inspector npx tsx src/mcp/stdio.ts",
     "mcp:probe": "tsx src/mcp/stdio.ts < scripts/mcp-probe.jsonl | jq",
+    "eval": "tsx --env-file=.env evals/runner.ts",
+    "judge": "tsx --env-file=.env evals/judge.ts",
+    "report": "tsx evals/report.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },

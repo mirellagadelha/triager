@@ -1,0 +1,617 @@
+{
+  "variant": "sonnet-off",
+  "model": "claude-sonnet-5",
+  "startedAt": "2026-09-16T19:45:51.169Z",
+  "cases_fingerprint": "b2a4461d6c307410",
+  "cases": [
+    {
+      "id": "route-01",
+      "tags": [
+        "unambiguous",
+        "with-customer",
+        "enterprise-bump"
+      ],
+      "grade": {
+        "correct": false,
+        "formatOk": true,
+        "queueOk": true,
+        "priorityOk": false,
+        "lookupOk": true,
+        "trajectoryOk": true,
+        "got": {
+          "queue": "billing",
+          "priority": "P1",
+          "notes": "Invoice discrepancy (40 seats billed vs 25 active users) for enterprise customer Acme Ltda, so priority was increased by one level."
+        },
+        "toolSequence": [
+          "classify_ticket",
+          "lookup_customer",
+          "route_ticket"
+        ],
+        "expectedSequence": [
+          "classify_ticket",
+          "lookup_customer",
+          "route_ticket"
+        ]
+      },
+      "usage": {
+        "input": 8004,
+        "output": 424,
+        "cacheRead": 0,
+        "cacheWrite": 0
+      },
+      "apiMs": 6758,
+      "wallMs": 6767,
+      "iterations": 3,
+      "stoppedAtLimit": false,
+      "text": "<triage>\n  <queue>billing</queue>\n  <priority>P1</priority>\n  <notes>\n    Invoice discrepancy (40 seats billed vs 25 active users) for enterprise customer Acme Ltda, so priority was increased by one level.\n  </notes>\n</triage>"
+    },
+    {
+      "id": "route-02",
+      "tags": [
+        "unambiguous",
+        "no-customer"
+      ],
+      "grade": {
+        "correct": true,
+        "formatOk": true,
+        "queueOk": true,
+        "priorityOk": true,
+        "lookupOk": true,
+        "trajectoryOk": true,
+        "got": {
+          "queue": "billing",
+          "priority": "P3",
+          "notes": "Customer requests clarification on a monthly plan price change; no customer identifier was provided, so no lookup was performed."
+        },
+        "toolSequence": [
+          "classify_ticket",
+          "route_ticket"
+        ],
+        "expectedSequence": [
+          "classify_ticket",
+          "route_ticket"
+        ]
+      },
+      "usage": {
+        "input": 7525,
+        "output": 343,
+        "cacheRead": 0,
+        "cacheWrite": 0
+      },
+      "apiMs": 5114,
+      "wallMs": 5117,
+      "iterations": 3,
+      "stoppedAtLimit": false,
+      "text": "<triage>\n  <queue>billing</queue>\n  <priority>P3</priority>\n  <notes>Customer requests clarification on a monthly plan price change; no customer identifier was provided, so no lookup was performed.</notes>\n</triage>"
+    },
+    {
+      "id": "route-03",
+      "tags": [
+        "unambiguous",
+        "with-customer",
+        "free-plan"
+      ],
+      "grade": {
+        "correct": false,
+        "formatOk": true,
+        "queueOk": true,
+        "priorityOk": false,
+        "lookupOk": true,
+        "trajectoryOk": true,
+        "got": {
+          "queue": "billing",
+          "priority": "P2",
+          "notes": "Customer on free plan reports unexpected $49 charge. Plan is free, not enterprise, so no priority increase applied."
+        },
+        "toolSequence": [
+          "classify_ticket",
+          "lookup_customer",
+          "route_ticket"
+        ],
+        "expectedSequence": [
+          "classify_ticket",
+          "lookup_customer",
+          "route_ticket"
+        ]
+      },
+      "usage": {
+        "input": 7867,
+        "output": 385,
+        "cacheRead": 0,
+        "cacheWrite": 0
+      },
+      "apiMs": 5148,
+      "wallMs": 5149,
+      "iterations": 3,
+      "stoppedAtLimit": false,
+      "text": "<triage>\n  <queue>billing</queue>\n  <priority>P2</priority>\n  <notes>Customer on free plan reports unexpected $49 charge. Plan is free, not enterprise, so no priority increase applied.</notes>\n</triage>"
+    },
+    {
+      "id": "route-04",
+      "tags": [
+        "unambiguous",
+        "with-customer",
+        "customer-not-found"
+      ],
+      "grade": {
+        "correct": true,
+        "formatOk": true,
+        "queueOk": true,
+        "priorityOk": true,
+        "lookupOk": true,
+        "trajectoryOk": true,
+        "got": {
+          "queue": "billing",
+          "priority": "P1",
+          "notes": "Failed renewal payment caused workspace-wide read-only lock affecting 60 users; customer record CUST-7777 was not found in the system."
+        },
+        "toolSequence": [
+          "classify_ticket",
+          "lookup_customer",
+          "route_ticket"
+        ],
+        "expectedSequence": [
+          "classify_ticket",
+          "lookup_customer",
+          "route_ticket"
+        ]
+      },
+      "usage": {
+        "input": 7910,
+        "output": 413,
+        "cacheRead": 0,
+        "cacheWrite": 0
+      },
+      "apiMs": 6394,
+      "wallMs": 6397,
+      "iterations": 3,
+      "stoppedAtLimit": false,
+      "text": "<triage>\n  <queue>billing</queue>\n  <priority>P1</priority>\n  <notes>Failed renewal payment caused workspace-wide read-only lock affecting 60 users; customer record CUST-7777 was not found in the system.</notes>\n</triage>"
+    },
+    {
+      "id": "route-05",
+      "tags": [
+        "unambiguous",
+        "with-customer",
+        "enterprise-bump-capped"
+      ],
+      "grade": {
+        "correct": true,
+        "formatOk": true,
+        "queueOk": true,
+        "priorityOk": true,
+        "lookupOk": true,
+        "trajectoryOk": true,
+        "got": {
+          "queue": "tier2",
+          "priority": "P1",
+          "notes": "Complete API outage (503 errors) since 9 AM for enterprise customer Acme Ltda; already P1 due to high-urgency outage."
+        },
+        "toolSequence": [
+          "classify_ticket",
+          "lookup_customer",
+          "route_ticket"
+        ],
+        "expectedSequence": [
+          "classify_ticket",
+          "lookup_customer",
+          "route_ticket"
+        ]
+      },
+      "usage": {
+        "input": 7957,
+        "output": 412,
+        "cacheRead": 0,
+        "cacheWrite": 0
+      },
+      "apiMs": 6728,
+      "wallMs": 6729,
+      "iterations": 3,
+      "stoppedAtLimit": false,
+      "text": "<triage>\n  <queue>tier2</queue>\n  <priority>P1</priority>\n  <notes>Complete API outage (503 errors) since 9 AM for enterprise customer Acme Ltda; already P1 due to high-urgency outage.</notes>\n</triage>"
+    },
+    {
+      "id": "route-06",
+      "tags": [
+        "unambiguous",
+        "no-customer"
+      ],
+      "grade": {
+        "correct": true,
+        "formatOk": true,
+        "queueOk": true,
+        "priorityOk": true,
+        "lookupOk": true,
+        "trajectoryOk": true,
+        "got": {
+          "queue": "tier2",
+          "priority": "P1",
+          "notes": "Full company-wide dashboard outage reported; no customer ID provided, so lookup was skipped. Routed as high-urgency technical issue."
+        },
+        "toolSequence": [
+          "classify_ticket",
+          "route_ticket"
+        ],
+        "expectedSequence": [
+          "classify_ticket",
+          "route_ticket"
+        ]
+      },
+      "usage": {
+        "input": 7548,
+        "output": 359,
+        "cacheRead": 0,
+        "cacheWrite": 0
+      },
+      "apiMs": 6306,
+      "wallMs": 6307,
+      "iterations": 3,
+      "stoppedAtLimit": false,
+      "text": "<triage>\n  <queue>tier2</queue>\n  <priority>P1</priority>\n  <notes>Full company-wide dashboard outage reported; no customer ID provided, so lookup was skipped. Routed as high-urgency technical issue.</notes>\n</triage>"
+    },
+    {
+      "id": "route-07",
+      "tags": [
+        "unambiguous",
+        "with-customer",
+        "customer-not-found"
+      ],
+      "grade": {
+        "correct": true,
+        "formatOk": true,
+        "queueOk": true,
+        "priorityOk": true,
+        "lookupOk": true,
+        "trajectoryOk": true,
+        "got": {
+          "queue": "tier2",
+          "priority": "P1",
+          "notes": "Production pipeline outage due to a three-day data export failure; routed as high-urgency technical issue. Customer record CUST-4242 was not found in the system."
+        },
+        "toolSequence": [
+          "classify_ticket",
+          "lookup_customer",
+          "route_ticket"
+        ],
+        "expectedSequence": [
+          "classify_ticket",
+          "lookup_customer",
+          "route_ticket"
+        ]
+      },
+      "usage": {
+        "input": 7800,
+        "output": 386,
+        "cacheRead": 0,
+        "cacheWrite": 0
+      },
+      "apiMs": 6081,
+      "wallMs": 6082,
+      "iterations": 3,
+      "stoppedAtLimit": false,
+      "text": "<triage>\n  <queue>tier2</queue>\n  <priority>P1</priority>\n  <notes>Production pipeline outage due to a three-day data export failure; routed as high-urgency technical issue. Customer record CUST-4242 was not found in the system.</notes>\n</triage>"
+    },
+    {
+      "id": "route-08",
+      "tags": [
+        "unambiguous",
+        "no-customer"
+      ],
+      "grade": {
+        "correct": false,
+        "formatOk": true,
+        "queueOk": true,
+        "priorityOk": false,
+        "lookupOk": true,
+        "trajectoryOk": true,
+        "got": {
+          "queue": "tier1",
+          "priority": "P3",
+          "notes": "Minor UI bug (dark mode setting not persisting) with no functional impact. No customer identifier was provided, so no lookup was performed."
+        },
+        "toolSequence": [
+          "classify_ticket",
+          "route_ticket"
+        ],
+        "expectedSequence": [
+          "classify_ticket",
+          "route_ticket"
+        ]
+      },
+      "usage": {
+        "input": 7566,
+        "output": 363,
+        "cacheRead": 0,
+        "cacheWrite": 0
+      },
+      "apiMs": 9665,
+      "wallMs": 9666,
+      "iterations": 3,
+      "stoppedAtLimit": false,
+      "text": "<triage>\n  <queue>tier1</queue>\n  <priority>P3</priority>\n  <notes>Minor UI bug (dark mode setting not persisting) with no functional impact. No customer identifier was provided, so no lookup was performed.</notes>\n</triage>"
+    },
+    {
+      "id": "route-09",
+      "tags": [
+        "unambiguous",
+        "no-customer"
+      ],
+      "grade": {
+        "correct": true,
+        "formatOk": true,
+        "queueOk": true,
+        "priorityOk": true,
+        "lookupOk": true,
+        "trajectoryOk": true,
+        "got": {
+          "queue": "tier1",
+          "priority": "P3",
+          "notes": "Simple how-to question about inviting a teammate; no customer ID provided so no lookup was performed."
+        },
+        "toolSequence": [
+          "classify_ticket",
+          "route_ticket"
+        ],
+        "expectedSequence": [
+          "classify_ticket",
+          "route_ticket"
+        ]
+      },
+      "usage": {
+        "input": 7515,
+        "output": 341,
+        "cacheRead": 0,
+        "cacheWrite": 0
+      },
+      "apiMs": 7214,
+      "wallMs": 7215,
+      "iterations": 3,
+      "stoppedAtLimit": false,
+      "text": "<triage>\n  <queue>tier1</queue>\n  <priority>P3</priority>\n  <notes>Simple how-to question about inviting a teammate; no customer ID provided so no lookup was performed.</notes>\n</triage>"
+    },
+    {
+      "id": "route-10",
+      "tags": [
+        "unambiguous",
+        "with-customer",
+        "enterprise-bump"
+      ],
+      "grade": {
+        "correct": false,
+        "formatOk": true,
+        "queueOk": false,
+        "priorityOk": true,
+        "lookupOk": true,
+        "trajectoryOk": true,
+        "got": {
+          "queue": "success",
+          "priority": "P2",
+          "notes": "Enterprise customer (Acme Ltda) requesting an email update on their account; priority raised from P3 to P2 due to enterprise plan."
+        },
+        "toolSequence": [
+          "classify_ticket",
+          "lookup_customer",
+          "route_ticket"
+        ],
+        "expectedSequence": [
+          "classify_ticket",
+          "lookup_customer",
+          "route_ticket"
+        ]
+      },
+      "usage": {
+        "input": 7843,
+        "output": 383,
+        "cacheRead": 0,
+        "cacheWrite": 0
+      },
+      "apiMs": 4939,
+      "wallMs": 4940,
+      "iterations": 3,
+      "stoppedAtLimit": false,
+      "text": "<triage>\n  <queue>success</queue>\n  <priority>P2</priority>\n  <notes>Enterprise customer (Acme Ltda) requesting an email update on their account; priority raised from P3 to P2 due to enterprise plan.</notes>\n</triage>"
+    },
+    {
+      "id": "route-11",
+      "tags": [
+        "ambiguous",
+        "no-customer"
+      ],
+      "grade": {
+        "correct": true,
+        "formatOk": true,
+        "queueOk": true,
+        "priorityOk": true,
+        "lookupOk": true,
+        "trajectoryOk": true,
+        "got": {
+          "queue": "tier1",
+          "priority": "P3",
+          "notes": "Ticket lacks detail (no customer ID or context); routed to tier1 for follow-up and clarification."
+        },
+        "toolSequence": [
+          "classify_ticket",
+          "route_ticket"
+        ],
+        "expectedSequence": [
+          "classify_ticket",
+          "route_ticket"
+        ]
+      },
+      "usage": {
+        "input": 7483,
+        "output": 327,
+        "cacheRead": 0,
+        "cacheWrite": 0
+      },
+      "apiMs": 4424,
+      "wallMs": 4424,
+      "iterations": 3,
+      "stoppedAtLimit": false,
+      "text": "<triage>\n  <queue>tier1</queue>\n  <priority>P3</priority>\n  <notes>Ticket lacks detail (no customer ID or context); routed to tier1 for follow-up and clarification.</notes>\n</triage>"
+    },
+    {
+      "id": "route-12",
+      "tags": [
+        "ambiguous",
+        "no-customer"
+      ],
+      "grade": {
+        "correct": true,
+        "formatOk": true,
+        "queueOk": true,
+        "priorityOk": true,
+        "lookupOk": true,
+        "trajectoryOk": true,
+        "got": {
+          "queue": "tier1",
+          "priority": "P3",
+          "notes": "Ticket contains no actionable details beyond a claim of urgency; no customer identifier was provided. Follow-up is required to clarify the actual issue."
+        },
+        "toolSequence": [
+          "classify_ticket",
+          "route_ticket"
+        ],
+        "expectedSequence": [
+          "classify_ticket",
+          "route_ticket"
+        ]
+      },
+      "usage": {
+        "input": 7516,
+        "output": 347,
+        "cacheRead": 0,
+        "cacheWrite": 0
+      },
+      "apiMs": 6549,
+      "wallMs": 6549,
+      "iterations": 3,
+      "stoppedAtLimit": false,
+      "text": "<triage>\n  <queue>tier1</queue>\n  <priority>P3</priority>\n  <notes>Ticket contains no actionable details beyond a claim of urgency; no customer identifier was provided. Follow-up is required to clarify the actual issue.</notes>\n</triage>"
+    },
+    {
+      "id": "route-13",
+      "tags": [
+        "unambiguous",
+        "with-customer",
+        "customer-not-found"
+      ],
+      "grade": {
+        "correct": true,
+        "formatOk": true,
+        "queueOk": true,
+        "priorityOk": true,
+        "lookupOk": true,
+        "trajectoryOk": true,
+        "got": {
+          "queue": "success",
+          "priority": "P3",
+          "notes": "Positive feedback about the export feature; customer record CUST-9001 was not found in the system."
+        },
+        "toolSequence": [
+          "classify_ticket",
+          "lookup_customer",
+          "route_ticket"
+        ],
+        "expectedSequence": [
+          "classify_ticket",
+          "lookup_customer",
+          "route_ticket"
+        ]
+      },
+      "usage": {
+        "input": 7804,
+        "output": 367,
+        "cacheRead": 0,
+        "cacheWrite": 0
+      },
+      "apiMs": 6373,
+      "wallMs": 6373,
+      "iterations": 3,
+      "stoppedAtLimit": false,
+      "text": "<triage>\n  <queue>success</queue>\n  <priority>P3</priority>\n  <notes>Positive feedback about the export feature; customer record CUST-9001 was not found in the system.</notes>\n</triage>"
+    },
+    {
+      "id": "route-14",
+      "tags": [
+        "unambiguous",
+        "with-customer",
+        "free-plan"
+      ],
+      "grade": {
+        "correct": true,
+        "formatOk": true,
+        "queueOk": true,
+        "priorityOk": true,
+        "lookupOk": true,
+        "trajectoryOk": true,
+        "got": {
+          "queue": "success",
+          "priority": "P3",
+          "notes": "Feature suggestion (weekly scheduled reports) from a free-plan customer, no urgency, no priority increase applied."
+        },
+        "toolSequence": [
+          "classify_ticket",
+          "lookup_customer",
+          "route_ticket"
+        ],
+        "expectedSequence": [
+          "classify_ticket",
+          "lookup_customer",
+          "route_ticket"
+        ]
+      },
+      "usage": {
+        "input": 7901,
+        "output": 382,
+        "cacheRead": 0,
+        "cacheWrite": 0
+      },
+      "apiMs": 5319,
+      "wallMs": 5319,
+      "iterations": 3,
+      "stoppedAtLimit": false,
+      "text": "<triage>\n  <queue>success</queue>\n  <priority>P3</priority>\n  <notes>Feature suggestion (weekly scheduled reports) from a free-plan customer, no urgency, no priority increase applied.</notes>\n</triage>"
+    },
+    {
+      "id": "route-15",
+      "tags": [
+        "unambiguous",
+        "no-customer"
+      ],
+      "grade": {
+        "correct": true,
+        "formatOk": true,
+        "queueOk": true,
+        "priorityOk": true,
+        "lookupOk": true,
+        "trajectoryOk": true,
+        "got": {
+          "queue": "success",
+          "priority": "P3",
+          "notes": "Positive feedback about improved onboarding documentation; no customer identifier provided, routed to success team for awareness."
+        },
+        "toolSequence": [
+          "classify_ticket",
+          "route_ticket"
+        ],
+        "expectedSequence": [
+          "classify_ticket",
+          "route_ticket"
+        ]
+      },
+      "usage": {
+        "input": 7573,
+        "output": 351,
+        "cacheRead": 0,
+        "cacheWrite": 0
+      },
+      "apiMs": 6602,
+      "wallMs": 6602,
+      "iterations": 3,
+      "stoppedAtLimit": false,
+      "text": "<triage>\n  <queue>success</queue>\n  <priority>P3</priority>\n  <notes>Positive feedback about improved onboarding documentation; no customer identifier provided, routed to success team for awareness.</notes>\n</triage>"
+    }
+  ]
+}
