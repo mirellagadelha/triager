@@ -70,6 +70,18 @@ export function compare(runs: SuiteRun[]): void {
     );
   }
 
+  // Different agents over the same cases are valid for before/after comparisons.
+  // The agent fingerprint explains what changed between runs.
+  const agents = new Set(runs.map((run) => run.agent_fingerprint ?? "(unrecorded)"));
+
+  if (agents.size > 1) {
+    console.log("\nThese runs measured different agents (prompt or tools changed):");
+
+    for (const run of runs) {
+      console.log(`  ${run.variant.padEnd(17)} agent ${run.agent_fingerprint ?? "(unrecorded)"}`);
+    }
+  }
+
   const rows = runs.map(summarize);
   const header = ["variant", "model", "correct", "queue", "prio", "cost", "per case", "latency"];
 

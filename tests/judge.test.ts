@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import { casesOfKind } from "../evals/cases.js";
-import { buildJudgeMessage, fence, scoreVerdict } from "../evals/judge.js";
+import { buildJudgeMessage, scoreVerdict } from "../evals/judge.js";
+import { fence } from "../src/agent/prompts.js";
 import type { Verdict } from "../evals/judge.js";
 
 const QUALITY_CASES = casesOfKind("quality");

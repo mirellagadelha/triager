@@ -13,12 +13,14 @@ import { pathToFileURL } from "node:url";
 import Anthropic from "@anthropic-ai/sdk";
 
 import { runTriage } from "../src/agent/loop.js";
+import { SYSTEM_PROMPT } from "../src/agent/prompts.js";
 import type { RunOptions, TriageUsage } from "../src/agent/loop.js";
 import { RealClient } from "../src/llm/client.js";
+import { toolSpecs } from "../src/tools/registry.js";
 import type { LlmClient } from "../src/llm/client.js";
 import { CASES, casesOfKind } from "./cases.js";
 import type { EvalCase } from "./cases.js";
-import { baselines, gradeRoute } from "./graders.js";
+import { baselines, gradeInjection, gradeRoute } from "./graders.js";
 import { costOf } from "./pricing.js";
 import type { RouteGrade } from "./graders.js";
 
@@ -47,6 +49,9 @@ export interface SuiteRun {
 
   /** Two runs are comparable only if this matches. */
   cases_fingerprint: string;
+
+  /** Differs across a prompt or tool change, which is intended. */
+  agent_fingerprint: string;
   cases: CaseRun[];
 }
 
@@ -72,6 +77,18 @@ export function fingerprint(cases: EvalCase[]): string {
   return createHash("sha256").update(JSON.stringify(payload)).digest("hex").slice(0, 16);
 }
 
+/**
+ * Fingerprint of the measured agent based on its prompt and tool catalogue.
+ *
+ * Used with the case fingerprint to ensure before/after comparisons use
+ * the same agent and the same cases.
+ */
+export function fingerprintAgent(): string {
+  const payload = JSON.stringify([SYSTEM_PROMPT, toolSpecs]);
+
+  return createHash("sha256").update(payload).digest("hex").slice(0, 16);
+}
+
 export async function runSuite(
   client: LlmClient,
   cases: EvalCase[],
@@ -93,7 +110,10 @@ export async function runSuite(
     runs.push({
       id: testCase.id,
       tags: testCase.tags,
-      grade: gradeRoute(testCase, result),
+      grade:
+        testCase.kind === "injection"
+          ? gradeInjection(testCase, result)
+          : gradeRoute(testCase, result),
       usage: result.usage,
       apiMs: result.calls.reduce((total, call) => total + call.latencyMs, 0),
       wallMs: Date.now() - startedAt,
@@ -108,6 +128,7 @@ export async function runSuite(
     model: variant.model,
     startedAt: new Date().toISOString(),
     cases_fingerprint: fingerprint(cases),
+    agent_fingerprint: fingerprintAgent(),
     cases: runs,
   };
 }
@@ -157,6 +178,33 @@ export function printSummary(run: SuiteRun, cases: EvalCase[]): void {
     "  tool path             ",
     rate(run.cases, (grade) => grade.trajectoryOk),
   );
+
+  const attacks = run.cases.filter((item) => item.grade.resisted !== undefined);
+
+  if (attacks.length > 0) {
+    const held = attacks.filter((item) => item.grade.resisted).length;
+
+    // Fail-on-any means a single failure is enough to fail the check.
+    console.log(`\n  attacks resisted      ${held}/${attacks.length}`);
+
+    for (const attack of attacks) {
+      if (attack.grade.resisted) {
+        continue;
+      }
+
+      const why = [
+        attack.grade.correct ? null : "moved the ticket",
+        attack.grade.trajectoryOk ? null : "changed the tool path",
+        attack.grade.leaked ? "leaked the prompt" : null,
+      ].filter(Boolean);
+
+      console.log(`    ${attack.id} FAILED: ${why.join(", ")}`);
+    }
+
+    console.log(held === attacks.length ? "" : "  ATTACK SUCCEEDED\n");
+
+    return;
+  }
 
   // The naive baseline. This shows whether the model actually improves on a fixed guess.
   const tie = reference.headline.tied > 1 ? `, tied with ${reference.headline.tied - 1}` : "";
