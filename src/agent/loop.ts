@@ -37,9 +37,25 @@ export interface RunOptions {
 
   /** Omitted means each model's own default. */
   thinking?: Anthropic.MessageCreateParamsNonStreaming["thinking"];
+
+  cache?: boolean;
 }
 
 const DEFAULT_MAX_TOKENS = 1024;
+
+/**
+ * Builds the `system` parameter with a cache breakpoint on its last block.
+ *
+ * The API caches everything up to the breakpoint, including `tools` and
+ * `system`. The ticket is excluded because it changes on every request.
+ */
+export function buildSystem(cache: boolean): Anthropic.MessageCreateParamsNonStreaming["system"] {
+  if (!cache) {
+    return SYSTEM_PROMPT;
+  }
+
+  return [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }];
+}
 
 export async function runTriage(
   client: LlmClient,
@@ -53,6 +69,9 @@ export async function runTriage(
   const calls: CallMetrics[] = [];
   let iterations = 0;
 
+  // Built once so every call sends the same prefix and can hit the cache.
+  const system = buildSystem(options.cache ?? true);
+
   while (iterations < options.maxIterations) {
     iterations++;
 
@@ -61,7 +80,7 @@ export async function runTriage(
     const response = await client.createMessage({
       model: options.model,
       max_tokens: options.maxTokens ?? DEFAULT_MAX_TOKENS,
-      system: SYSTEM_PROMPT,
+      system,
       tools: toolSpecs,
       messages,
       ...(options.thinking ? { thinking: options.thinking } : {}),

@@ -14,7 +14,7 @@ import Anthropic from "@anthropic-ai/sdk";
 
 import { runTriage } from "../src/agent/loop.js";
 import { SYSTEM_PROMPT } from "../src/agent/prompts.js";
-import type { RunOptions, TriageUsage } from "../src/agent/loop.js";
+import type { CallMetrics, RunOptions, TriageUsage } from "../src/agent/loop.js";
 import { RealClient } from "../src/llm/client.js";
 import { toolSpecs } from "../src/tools/registry.js";
 import type { LlmClient } from "../src/llm/client.js";
@@ -35,6 +35,13 @@ export interface CaseRun {
   tags: string[];
   grade: RouteGrade;
   usage: TriageUsage;
+
+  /**
+   * One entry per API call. Totals hide cache behavior, as the first call writes
+   * the prefix and subsequent calls read it.
+   */
+  calls: CallMetrics[];
+
   apiMs: number;
   wallMs: number;
   iterations: number;
@@ -52,6 +59,8 @@ export interface SuiteRun {
 
   /** Differs across a prompt or tool change, which is intended. */
   agent_fingerprint: string;
+
+  cache: boolean;
   cases: CaseRun[];
 }
 
@@ -93,6 +102,7 @@ export async function runSuite(
   client: LlmClient,
   cases: EvalCase[],
   variant: Variant,
+  options: { cache: boolean } = { cache: true },
 ): Promise<SuiteRun> {
   const runs: CaseRun[] = [];
 
@@ -105,6 +115,7 @@ export async function runSuite(
       maxIterations: MAX_ITERATIONS,
       maxTokens: MAX_TOKENS,
       thinking: variant.thinking,
+      cache: options.cache,
     });
 
     runs.push({
@@ -115,6 +126,7 @@ export async function runSuite(
           ? gradeInjection(testCase, result)
           : gradeRoute(testCase, result),
       usage: result.usage,
+      calls: result.calls,
       apiMs: result.calls.reduce((total, call) => total + call.latencyMs, 0),
       wallMs: Date.now() - startedAt,
       iterations: result.iterations,
@@ -129,6 +141,7 @@ export async function runSuite(
     startedAt: new Date().toISOString(),
     cases_fingerprint: fingerprint(cases),
     agent_fingerprint: fingerprintAgent(),
+    cache: options.cache,
     cases: runs,
   };
 }
@@ -243,10 +256,29 @@ export function printSummary(run: SuiteRun, cases: EvalCase[]): void {
     `\n  tokens              in ${totals.input}  out ${totals.output}` +
       `  cache-read ${totals.cacheRead}  cache-write ${totals.cacheWrite}`,
   );
+
   console.log(
     `  API latency         ${totals.apiMs}ms total, ` +
       `${Math.round(totals.apiMs / run.cases.length)}ms per case`,
   );
+
+  // `input` is only the uncached remainder. The full prompt includes all three,
+  // so using `input` alone would omit the cached portion.
+  const prompt = totals.input + totals.cacheRead + totals.cacheWrite;
+
+  if (run.cache) {
+    console.log(
+      `  from cache          ${Math.round((100 * totals.cacheRead) / prompt)}% of input tokens`,
+    );
+
+    if (totals.cacheRead === 0) {
+      console.log(
+        "  WARNING             caching was requested and nothing was read. Check the prefix " +
+          "size against the model's minimum cacheable length.",
+      );
+    }
+  }
+
   console.log(`  cost                $${costOf(run.model, totals).toFixed(4)}\n`);
 }
 
@@ -280,7 +312,8 @@ async function main(): Promise<void> {
   console.log(`Running ${selected.length} case(s) with ${variant.name}. This consumes tokens.`);
 
   const client = new RealClient(new Anthropic());
-  const run = await runSuite(client, selected, variant);
+  const cache = !process.argv.includes("--no-cache");
+  const run = await runSuite(client, selected, variant, { cache });
 
   printSummary(run, selected);
 
